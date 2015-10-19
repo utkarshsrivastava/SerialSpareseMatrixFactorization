@@ -65,7 +65,7 @@ double solution::objectiveFunction (const double & lambda, const double & mu, co
 					WiCj += _W[i][k]*_C[k][j];
 				}
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),_observation[i][j])*pow(1-(1/(1+exp(-WiCj))),(1-_observation[i][j])));
-				sumLog += _observation[i][j]* log(1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1-1/(1+exp(-WiCj)));
+				sumLog += _observation[i][j]* log(0.001+1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1.001-1/(1+exp(-WiCj)));
 			}
 		}
 		double sumTemp(0.0);
@@ -95,7 +95,7 @@ double solution::objectiveFunctionW (double  & lambda, double & mu){
 					WiCj += _W[i][k]*_C[k][j];
 				}
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),_observation[i][j])*pow(1-(1/(1+exp(-WiCj))),(1-_observation[i][j])));
-				sumLog += _observation[i][j]* log(1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1-1/(1+exp(-WiCj)));
+				sumLog += _observation[i][j]* log(0.001+1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1.001-1/(1+exp(-WiCj)));
 			}
 		}
 		double sumTemp(0.0);
@@ -120,7 +120,7 @@ double solution::objectiveFunctionC (double & gamma){
 				for (int k=0; k < _K; k++){
 					WiCj += _W[i][k]*_C[k][j];
 				}
-				sumLog+= (_observation[i][j]* log(1/(1+exp(-WiCj)))+(1-_observation[i][j])*log(1-(1/(1+exp(-WiCj)))));
+				sumLog+= (_observation[i][j]* log(0.001+1/(1+exp(-WiCj)))+(1-_observation[i][j])*log(1.001-(1/(1+exp(-WiCj)))));
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),observation[i][j])   *    pow(1-(1/(1+exp(-WiCj))),(1-observation[i][j])));
 			}
 		}
