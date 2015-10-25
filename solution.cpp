@@ -20,26 +20,24 @@ solution::solution(int ** observation, double & sparsityThreshold, int & Q, int 
 	_observation = observation;
 	cout<<"Initial W: " << '\n';
 	_Q = Q; _N = N; _K = K;
-	_W = new double *[_Q];
-	_C = new double *[_K];
+
+
 	for (int i = 0; i < _Q; i++) {
-		_W[i] = new double [_K];
 		for (int j = 0; j < _K; j++) {
-			_W[i][j] = 0.0;
+			_W.push_back(0.0);
 			double randt = ((double) rand() / (RAND_MAX));
 			if (randt < sparsityThreshold) {
-				_W[i][j] = 5 * ((double) rand() / (RAND_MAX));
+				_W[i*_K+j]= 5 * ((double) rand() / (RAND_MAX));
 			}
-			cout << _W[i][j]<< " ";
+			cout << _W[i*_K+j]<< " ";
 		}
 		cout << '\n';
 	}
 	cout<<"Initial C: "<<endl;
 	for (int i = 0; i < _K; i++) {
-		_C[i] = new double[_N];
 		for (int j = 0; j < _N; j++) {
-			_C[i][j] = 2 * ((double) rand() / (RAND_MAX)) - 1;
-			cout << _C[i][j]<< " ";
+			_C.push_back(2 * ((double) rand() / (RAND_MAX)) - 1);
+			cout << _C[i*_N+j]<< " ";
 		}
 		cout << '\n';
 	}
@@ -48,10 +46,10 @@ solution::solution(int ** observation, double & sparsityThreshold, int & Q, int 
 solution::~solution() {
 	// TODO Auto-generated destructor stub
 }
-double ** solution::getW(){
+std::vector<double> solution::getW(){
 	return _W;
 }
-double ** solution::getC(){
+std::vector<double> solution::getC(){
 	return _C;
 }
 double solution::objectiveFunction (const double & lambda, const double & mu, const double & gamma){
@@ -62,23 +60,23 @@ double solution::objectiveFunction (const double & lambda, const double & mu, co
 			if (_observation[i][j] != -1){
 				double WiCj(0.0);
 				for (int k=0; k < _K; k++){
-					WiCj += _W[i][k]*_C[k][j];
+					WiCj += _W[i*_K+k]*_C[j+k*_N];
 				}
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),_observation[i][j])*pow(1-(1/(1+exp(-WiCj))),(1-_observation[i][j])));
-				sumLog += _observation[i][j]* log(0.001+1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1.001-1/(1+exp(-WiCj)));
+				sumLog += _observation[i][j]* log(1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1-1/(1+exp(-WiCj)));
 			}
 		}
 		double sumTemp(0.0);
 		for (int k = 0; k < _K; k++){
 
-			sumWl1 += (_W[i][k] < 0) ? -_W[i][k] : _W[i][k];
-			sumTemp += _W[i][k]*_W[i][k];
+			sumWl1 += (_W[i*_K+k] < 0) ? -_W[i*_K+k] : _W[i*_K+k];
+			sumTemp += _W[i*_K+k]*_W[i*_K+k];
 		}
 		sumWl2 += pow(sumTemp,0.5);
 	}
 	for (int i = 0; i < _K; i++){
 		for (int j = 0; j < _N; j++){
-			sumC += _C[i][j]*_C[i][j];
+			sumC += _C[i*_N+j]*_C[i*_N+j];
 		}
 	}
 	objectiveFunction = -sumLog + lambda*sumWl1 + mu*sumWl2 + gamma*sqrt(sumC);
@@ -92,17 +90,17 @@ double solution::objectiveFunctionW (double  & lambda, double & mu){
 			if (_observation[i][j] != -1){
 				double WiCj(0.0);
 				for (int k=0; k < _K; k++){
-					WiCj += _W[i][k]*_C[k][j];
+					WiCj += _W[i*_K+k]*_C[j+k*_N];
 				}
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),_observation[i][j])*pow(1-(1/(1+exp(-WiCj))),(1-_observation[i][j])));
-				sumLog += _observation[i][j]* log(0.001+1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1.001-1/(1+exp(-WiCj)));
+				sumLog += _observation[i][j]* log(1/(1+exp(-WiCj))) + (1-_observation[i][j])*log(1-1/(1+exp(-WiCj)));
 			}
 		}
 		double sumTemp(0.0);
 		for (int k = 0; k < _K; k++){
 
-			sumWl1 += (_W[i][k] < 0) ? -_W[i][k] : _W[i][k];
-			sumTemp += _W[i][k]*_W[i][k];
+			sumWl1 += (_W[i*_K+k] < 0) ? -_W[i*_K+k] : _W[i*_K+k];
+			sumTemp += _W[i*_K+k]*_W[i*_K+k];
 		}
 		sumWl2 += pow(sumTemp,0.5);
 	}
@@ -118,16 +116,16 @@ double solution::objectiveFunctionC (double & gamma){
 			if (_observation[i][j] != -1){
 				double WiCj(0.0);
 				for (int k=0; k < _K; k++){
-					WiCj += _W[i][k]*_C[k][j];
+					WiCj += _W[i*_K+k]*_C[j+k*_N];
 				}
-				sumLog+= (_observation[i][j]* log(0.001+1/(1+exp(-WiCj)))+(1-_observation[i][j])*log(1.001-(1/(1+exp(-WiCj)))));
+				sumLog+= (_observation[i][j]* log(1/(1+exp(-WiCj)))+(1-_observation[i][j])*log(1-(1/(1+exp(-WiCj)))));
 				//sumLog+= -log(pow(1/(1+exp(-WiCj)),observation[i][j])   *    pow(1-(1/(1+exp(-WiCj))),(1-observation[i][j])));
 			}
 		}
 	}
 	for (int i = 0; i < _K; i++){
 		for (int j = 0; j < _N; j++){
-			sumC += _C[i][j]*_C[i][j];
+			sumC += _C[i*_N+j]*_C[i*_N+j];
 		}
 	}
 	objectiveFunction = -sumLog + gamma*sqrt(sumC);
@@ -141,7 +139,7 @@ double solution::updateWij(const int & index_i, const int  & index_k, const doub
 	for (int j = 0; j < _N; j++){
 		WikCkj = 0.0;
 		for (int k = 0; k < _K; k++){
-				WikCkj += _W[index_i][k]*_C[k][j];
+				WikCkj += _W[index_i*_K+k]*_C[j+k*_N];
 			}
 		if (_observation[index_i][j] != -1){
 			yipi[j] =_observation[index_i][j] - (1/(1+exp(-WikCkj)));
@@ -149,15 +147,15 @@ double solution::updateWij(const int & index_i, const int  & index_k, const doub
 			yipi[j] =(rand()%2) - (1/(1+exp(-WikCkj)));
 		}
 
-		sum += _C[index_k][j]*yipi[j];
+		sum += _C[index_k*_N+j]*yipi[j];
 	}
 	//cout << "Sum->W: " << sum << endl;
 
-	delF = -sum + mu*_W[index_i][index_k];
+	delF = -sum + mu*_W[index_i*_K+index_k];
 	//cout << "DeltaF_w: " << delF << endl;
-	_W[index_i][index_k] =(_W[index_i][index_k]-stepSize*delF) < 0 ? 0 : (_W[index_i][index_k]-stepSize*delF);
+	_W[index_i*_K+index_k] =(_W[index_i*_K+index_k]-stepSize*delF) < 0 ? 0 : (_W[index_i*_K+index_k]-stepSize*delF);
 
-	return _W[index_i][index_k];
+	return _W[index_i*_K+index_k];
 }
 double solution::updateCij(const int & index_k, const int & index_j, const double & gamma,const double & stepSize){
 	double delF(0.0);
@@ -167,24 +165,27 @@ double solution::updateCij(const int & index_k, const int & index_j, const doubl
 	for (int j = 0; j < _Q; j++){
 		WikCkj = 0.0;
 		for (int k = 0; k < _K; k++){
-				WikCkj += _W[j][k]*_C[k][index_j];
+				WikCkj += _W[j*_K+k]*_C[index_j+k*_N];
 			}
 		if (_observation[j][index_j] != -1){
 			yipi[j] = _observation[j][index_j]-(1/(1+exp(-WikCkj)));
 		}else{
 			yipi[j] = (rand()%2)-(1/(1+exp(-WikCkj)));
 		}
-		sum += _W[j][index_k]*yipi[j];
+		sum += _W[j*_K+index_k]*yipi[j];
 	}
 	//cout << "Sum->C: " << sum << endl;
-	delF = -sum + gamma*_C[index_k][index_j];
+	delF = -sum + gamma*_C[index_k*_N+index_j];
 	//cout << "DeltaF_w: " << delF << endl;
 
-	_C[index_k][index_j] = (1/(1+gamma*stepSize))*(_C[index_k][index_j]-stepSize*delF);
+	_C[index_k*_N+index_j] = (1/(1+gamma*stepSize))*(_C[index_k*_N+index_j]-stepSize*delF);
 	//_C[index_k][index_j] = _C[index_k][index_j]-stepSize*delF;
 
-	return _C[index_k][index_j];
+	return _C[index_k*_N+index_j];
 }
+/*
+ *
+
 double * solution::updateRowWij(int & index_i, double & mu,double & stepSize){
 	double delF [_K];
 	double WikCkj (0.0);
@@ -240,3 +241,4 @@ double * solution::updateColumnCij(int & index_j, double & gamma,double & stepSi
 
 	return _C[index_j];
 }
+ */

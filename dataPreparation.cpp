@@ -43,16 +43,9 @@ dataPreparation::~dataPreparation() {
 }
  void dataPreparation::initialization() {
 
-	double ** C;
-	double ** W;
-	W = new double *[_Q];
-	for (int i = 0; i < _Q; i++){
-		W[i] = new double[_K];
-	}
-	C = new double *[_K];
-	for (int j = 0; j < _K; j++){
-		C[j] = new double[_N];
-	}
+    std::vector<double> W(_Q*_K);
+    std::vector<double> C(_K*_N);
+
 	/*vector<vector<double> >  C1( _K, std::vector<double> ( _N, 0 ) );
 	vector<vector<double> > W1( _Q, std::vector<double> ( _K, 0 ) );
 	vector<vector<int> > Y ( _Q, std::vector<int> ( _N, 0 ) );*/
@@ -63,20 +56,20 @@ dataPreparation::~dataPreparation() {
 	cout<< "W: "<< '\n';
 	for (int i = 0; i < _Q; i++) {
 		for (int j = 0; j < _K; j++) {
-			W[i][j] = 0.0;
+			W[i*_K+j]= 0.0;
 			double randt = ((double) rand() / (RAND_MAX));
 			if (randt < _dataThresold) {
-				W[i][j] = 5 * ((double) rand() / (RAND_MAX));
+				W[i*_K+j] = 5 * ((double) rand() / (RAND_MAX));
 			}
-			cout << W[i][j]<< " ";
+			cout << W[i*_K+j] << " ";
 		}
 		cout << '\n';
 	}
 	cout<<"C: "<<endl;
 	for (int i = 0; i < _K; i++) {
 		for (int j = 0; j < _N; j++) {
-			C[i][j] = 2 * ((double) rand() / (RAND_MAX)) - 1;
-			cout << C[i][j]<< " ";
+			C[i*_N+j] = 2 * ((double) rand() / (RAND_MAX)) - 1;
+			cout << C[i*_N+j]<< " ";
 		}
 		cout << '\n';
 	}
@@ -85,7 +78,7 @@ dataPreparation::~dataPreparation() {
 		for (int j = 0; j < _N; j++) {
 			double sum = 0;
 			for (int k = 0; k < _K; k++) {
-				sum += W[i][k] * C[k][j];
+				sum += W[i*_K+k]*C[j+k*+_N];
 			}
 			if (sum > 0){
 				_Y[i][j] = 1;
@@ -104,13 +97,9 @@ dataPreparation::~dataPreparation() {
 			cout<<_Y[i][j]<<" ";
 		}
 		cout << endl;
-		delete [] W[i];
+
 	}
-	delete [] W;
-	for (int j = 0; j < _K; j++){
-		delete [] C[j];
-	}
-	delete C;
+
 	//_Y =  & Y;
 }
 
